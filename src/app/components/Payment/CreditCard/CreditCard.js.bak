@@ -1,0 +1,130 @@
+import React from 'react'
+import CreditCardTemplate from './CreditCardTemplate'
+import CARD_TYPE_ENUM from '../../../common/CreditCardTypeEnum'
+import myStore from '../../../myStore'
+import validate from 'validate.js'
+import { reduxForm } from 'redux-form'
+
+var constraints = {
+    cardNumber: {
+        presence: true,
+        format: {
+            pattern: /^(34|37|4|5[1-5]).*$/,
+            message: function (value, attribute, validatorOptions, attributes, globalOptions) {
+                return validate.format("^%{num} is not a valid credit card number", {
+                    num: value
+                });
+            }
+        },
+        length: function (value, attributes, attributeName, options, constraints) {
+            if (value) {
+                // Amex
+                if ((/^(34|37).*$/).test(value)) return {is: 15};
+                // Visa, Mastercard
+                if ((/^(4|5[1-5]).*$/).test(value)) return {is: 16};
+            }
+            // Unknown card, don't validate length
+            return false;
+        }
+    },
+    securityCode: function (value, attributes, attributeName, options, constraints) {
+
+        for (var cardTypeEnum in CARD_TYPE_ENUM) {
+            console.log(attributes.cardType);
+            console.log(CARD_TYPE_ENUM[cardTypeEnum]);
+            if (attributes.cardType === CARD_TYPE_ENUM[cardTypeEnum].label) {
+                return {
+                    presence: {message: "is required when using " + CARD_TYPE_ENUM[cardTypeEnum].label},
+                    length: {is: CARD_TYPE_ENUM[cardTypeEnum].securityCodeLength}
+                };
+            }
+        }
+        return null;
+    }
+};
+
+class CreditCard extends React.PureComponent {
+
+    constructor() {
+        super();
+        this.getCreditCardType = this.getCreditCardType.bind(this);
+        this.handleCardNumberChange = this.handleCardNumberChange.bind(this);
+        this.handleSecurityCodeChange = this.handleSecurityCodeChange.bind(this);
+    }
+
+    getCreditCardType(value) {
+        var cardTypeEnum = null;
+        if ((CARD_TYPE_ENUM.amex.regex).test(value)) {
+            cardTypeEnum = CARD_TYPE_ENUM.amex;
+        } else if ((CARD_TYPE_ENUM.visa.regex).test(value)) {
+            cardTypeEnum = CARD_TYPE_ENUM.visa;
+        } else if ((CARD_TYPE_ENUM.mastercard.regex).test(value)) {
+            cardTypeEnum = CARD_TYPE_ENUM.mastercard;
+        }
+        return cardTypeEnum;
+    }
+
+    handleCardNumberChange(ev) {
+        var cardTypeEnum = this.getCreditCardType(ev.target.value);
+        var sanitized = ev.target.value;
+        if (sanitized !== null) {
+            sanitized = sanitized.replace(/[^0-9]/g, '');
+            if (cardTypeEnum !== null) {
+                sanitized = sanitized.substring(0, cardTypeEnum.maxLength);
+            }
+        }
+        myStore.dispatch({type: 'UPDATE_CARD_NUMBER', cardNumber: sanitized});
+    }
+
+    handleSecurityCodeChange(ev) {
+        var cardTypeEnum = this.getCreditCardType(this.props.cardNumber.value);
+        var sanitized = ev.target.value;
+        if (sanitized !== null) {
+            sanitized = sanitized.replace(/[^0-9]/g, '');
+            if (cardTypeEnum !== null) {
+                sanitized = sanitized.substring(0, cardTypeEnum.securityCodeLength);
+            }
+        }
+
+        myStore.dispatch({type: 'UPDATE_SECURITY_CODE', securityCode: sanitized});
+    }
+
+    render() {
+
+        var cardTypeEnum = this.getCreditCardType(this.props.cardNumber.value);
+        var cardType = 'UNKNOWN';
+        if (cardTypeEnum != null) {
+            cardType = cardTypeEnum.label;
+        }
+
+        // Sanitize the cardNumber
+        var sanitized = this.props.cardNumber.value;
+        var formatted = sanitized;
+        if (sanitized !== null) {
+            formatted = sanitized.replace(/.{3}/g, function (match) {
+                return match + ' ';
+            });
+            if (formatted.endsWith(' ')) {
+                formatted = formatted.substring(0, formatted.length - 1);
+            }
+        }
+
+        // Sanitize the securityCode
+        var sanitizedSecurityCode = this.props.securityCode.value;
+        var formattedSecurityCode = sanitizedSecurityCode;
+
+        var errors = validate.validate({
+                cardNumber: sanitized,
+                securityCode: sanitizedSecurityCode,
+                cardType: cardType
+            }, constraints) || {};
+
+        return CreditCardTemplate(this, formatted, formattedSecurityCode, cardType, errors);
+    }
+}
+
+//export default CreditCard;
+
+export default reduxForm({
+    form: 'creditCard'  // a unique identifier for this form
+})(CreditCard)
