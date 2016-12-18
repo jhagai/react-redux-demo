@@ -21,23 +21,27 @@ const validate = values => {
     return errors;
 }
 
-const normalizeCreditCard = value => {
-    console.log('normalize');
-    let normalized = value.replace(/[^0-9]/g, '');
-    let cardType = getCreditCardType(normalized);
+const normalizeCreditCard = props => {
+    return (value, previousValue) => {
+        let normalized = value.replace(/[^0-9]/g, '');
+        let cardType = getCreditCardType(normalized);
+        let previousCardType = getCreditCardType(previousValue);
 
-    if (cardType) {
-        if (normalized.length > cardType.maxLength) {
-            normalized = normalized.substring(0, cardType.maxLength);
+        if (cardType) {
+            if (normalized.length > cardType.maxLength) {
+                normalized = normalized.substring(0, cardType.maxLength);
+            }
         }
+
+        if (cardType !== previousCardType) {
+            props.change('cvc', '');
+        }
+        return normalized;
     }
-    //props.change('cvc', '');
-    return normalized;
 }
 
 
 const formatCreditCard = value => {
-    console.log('format');
     let cardType = getCreditCardType(value);
 
     let formatted = value;
@@ -50,7 +54,7 @@ const formatCreditCard = value => {
         }
     }
 
-    return formatted;
+    return formatted || '';
 }
 
 const normalizeCvc = cardNumberField => {
@@ -113,6 +117,7 @@ const renderField = ({input, label, type, meta: {touched, error, warning}}) => {
 }
 
 const renderCreditCardField = ({input, label, type, cardTypeLabel, meta: {touched, error, warning}}) => {
+
     return (
         <div className={'form-group ' + (touched && error ? 'has-error' : '')}>
             <div className="input-group">
@@ -151,7 +156,7 @@ let CreditCardComponent = (props) => {
                             <Field component={renderCreditCardField} name="cardNumber" label="Card number" type="text"
                                    cardTypeLabel={cardType ? cardType.label : ''}
                                    className="form-control"
-                                   normalize={normalizeCreditCard}
+                                   normalize={normalizeCreditCard(props)}
                                    format={formatCreditCard}
                             />
                         </div>
@@ -185,7 +190,7 @@ let CreditCardComponent = (props) => {
                                    className="form-control"
                             />
                         </div>
-                        <div className="col-xs-4 col-xs-offset-8">
+                        <div className="col-xs-12 col-md-4 col-md-offset-8">
                             <button type="submit" className="btn btn-primary col-xs-12" disabled={submitting}>Submit
                             </button>
                         </div>

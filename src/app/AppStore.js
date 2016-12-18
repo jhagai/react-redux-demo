@@ -7,23 +7,6 @@ var payment = (state = initalState.payment, action) => {
             ...state
             , 'selectedPayment': action.selectedPayment
         };
-    } else if (action.type === 'UPDATE_CARD_NUMBER') {
-        return {
-            ...state
-            , 'cardNumber': {
-                value: action.cardNumber
-                , pristine: false
-
-            }
-        };
-    } else if (action.type === 'UPDATE_SECURITY_CODE') {
-        return {
-            ...state
-            , 'securityCode': {
-                value: action.securityCode
-                , pristine: true
-            }
-        };
     } else {
         return state;
     }
@@ -33,26 +16,6 @@ var payment = (state = initalState.payment, action) => {
 var initalState = {
     payment: {
         'selectedPayment': 'CreditCard'
-        , 'name': {
-            value: ''
-            , prisitine: true
-        }
-        , 'cardNumber': {
-            value: ''
-            , prisitine: true
-        }
-        , 'securityCode': {
-            value: ''
-            , prisitine: true
-        }
-        , 'month': {
-            value: undefined
-            , prisitine: true
-        }
-        , 'year': {
-            value: undefined
-            , prisitine: true
-        }
     }
 
 };
