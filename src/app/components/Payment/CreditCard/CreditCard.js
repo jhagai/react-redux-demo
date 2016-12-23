@@ -4,7 +4,6 @@ import {Field, reduxForm, formValueSelector} from 'redux-form'
 import CARD_TYPE_ENUM from '../../../common/CreditCardTypeEnum'
 
 const validate = values => {
-    console.log('validate');
 
     const errors = {};
 
@@ -73,7 +72,7 @@ const normalizeCvc = cardNumberField => {
 
 function getCreditCardType(value) {
     var cardTypeEnum = null;
-    if(value) {
+    if (value) {
         if ((CARD_TYPE_ENUM.amex.regex).test(value)) {
             cardTypeEnum = CARD_TYPE_ENUM.amex;
         } else if ((CARD_TYPE_ENUM.visa.regex).test(value)) {
@@ -94,7 +93,7 @@ const validateCreditCard = (value) => {
     if (cardType === null) {
         return 'Unknown card Type.';
     } else {
-        return value.length === cardType.maxLength ? undefined : 'Must be ' + cardType.maxLength + ' for credit card type ' + cardType.label + ' and is actually of length ' + value.length;
+        return value.length === cardType.maxLength ? undefined : 'Must be ' + cardType.maxLength + ' for credit card type ' + cardType.label + ' and is currently of length ' + value.length;
     }
 }
 
@@ -108,23 +107,110 @@ const validateCvc = (value, cardNumber) => {
 }
 
 const renderField = ({input, label, type, meta: {touched, error, warning}}) => {
+
+    let feedBack = touched && ((error && <span>{error}</span>) || (warning && <span>{warning}</span>));
+
     return (
         <div className={'form-group ' + (touched && error ? 'has-error' : '')}>
             <input {...input} placeholder={label} type={type} className="form-control"/>
-            {touched && ((error && <span>{error}</span>) || (warning && <span>{warning}</span>))}
+            <div className="control-label">
+                {feedBack}
+            </div>
+
         </div>
     );
 }
 
 const renderCreditCardField = ({input, label, type, cardTypeLabel, meta: {touched, error, warning}}) => {
-
     return (
         <div className={'form-group ' + (touched && error ? 'has-error' : '')}>
             <div className="input-group">
                 <input {...input} placeholder={label} type={type} className="form-control"/>
                 <span className="input-group-addon">{cardTypeLabel}</span>
             </div>
-            {touched && ((error && <span>{error}</span>) || (warning && <span>{warning}</span>))}
+            <div className="control-label">
+                {touched && ((error && <span>{error}</span>) || (warning && <span>{warning}</span>))}
+            </div>
+        </div>
+    );
+}
+
+const monthList = [
+    'January'
+    , 'February'
+    , 'March'
+    , 'April'
+    , 'May'
+    , 'June'
+    , 'July'
+    , 'August'
+    , 'September'
+    , 'October'
+    , 'November'
+    , 'December'
+]
+
+const renderMonthField = (year) => {
+    let now = new Date();
+
+    return (props) => {
+        const {value} = props;
+        let defaultOption = <option value="" disabled key="0">(MM)</option>;
+        let options = [defaultOption];
+
+        let initialMonth = 0;
+        if (year && parseInt(year) === now.getFullYear()) {
+            initialMonth = now.getMonth();
+        }
+        for(let i = initialMonth; i < 12; i++) {
+            options.push(<option value={i+1} key={i+1}>{monthList[i]}</option>)
+        }
+
+        return renderSelectField(props, options);
+    }
+}
+
+const renderYearField = (month) => {
+    let now = new Date();
+    let nowYear = now.getFullYear();
+    let nowStartOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    return (props) => {
+        const {value} = props;
+
+        const defaultOption = <option value="" disabled key="0">(YYYY)</option>;
+
+        let options = [
+            defaultOption
+        ];
+
+
+        let startYear = nowYear;
+        if (month) {
+            let date = new Date(nowYear, month - 1, 1);
+            if(date < nowStartOfMonth ) {
+                startYear++;
+            }
+        }
+        for(let i = startYear; i < nowYear + 10; i++) {
+            options.push(<option value={i} key={i}>{i}</option>);
+        }
+
+        return renderSelectField(props, options);
+    }
+}
+
+const renderSelectField = (props, options) => {
+    const {input, meta: {touched, error, warning}} = props;
+
+    return (
+        <div className={'form-group ' + (touched && error ? 'has-error' : '')}>
+            <select {...input} className="form-control">
+                {options}
+            </select>
+            <div className="control-label">
+                {touched && ((error && <span>{error}</span>) || (warning && <span>{warning}</span>))}
+            </div>
         </div>
     );
 }
@@ -136,11 +222,12 @@ const showResults = values => {
 let CreditCardComponent = (props) => {
     const {
         cardType
+        , month
+        , year
         , handleSubmit
         , submitting
     } = props
 
-    console.log('render');
     return (
         <div className="col-xs-12">
             <div className="panel panel-primary">
@@ -160,28 +247,14 @@ let CreditCardComponent = (props) => {
                                    format={formatCreditCard}
                             />
                         </div>
-                        <div className="form-group col-xs-12 col-md-4">
-                            <Field name="month" className="form-control" component="select">
-                                <option>(MM)</option>
-                                <option value="1">January</option>
-                                <option value="2">February</option>
-                                <option value="3">March</option>
-                                <option value="4">April</option>
-                                <option value="5">May</option>
-                                <option value="6">June</option>
-                                <option value="7">July</option>
-                                <option value="8">August</option>
-                                <option value="9">September</option>
-                                <option value="10">October</option>
-                                <option value="11">November</option>
-                                <option value="12">December</option>
+                        <div className="col-xs-12 col-md-4">
+                            <Field name="month" className="form-control" component={renderMonthField(year)}
+                                   defaultValue="">
                             </Field>
                         </div>
-                        <div className="form-group col-xs-12 col-md-4">
-                            <Field name="year" className="form-control" component="select">
-                                <option>(YYYY)</option>
-                                <option value="2017">2017</option>
-                                <option value="2018">2018</option>
+                        <div className="col-xs-12 col-md-4">
+                            <Field name="year" className="form-control" component={renderYearField(month)}
+                                   defaultValue="">
                             </Field>
                         </div>
                         <div className="col-xs-12 col-md-4">
@@ -201,10 +274,12 @@ let CreditCardComponent = (props) => {
     );
 }
 
-CreditCardComponent = reduxForm({
-    form: 'creditCard'  // a unique identifier for this form
-    , validate
-})(CreditCardComponent)
+CreditCardComponent = reduxForm(
+    {
+        form: 'creditCard'  // a unique identifier for this form
+        , validate
+    }
+)(CreditCardComponent)
 
 // Decorate with connect to read form values
 const selector = formValueSelector('creditCard') // <-- same as form name
@@ -212,10 +287,15 @@ export default connect(
     state => {
         // can select values individually
         const cardNumber = selector(state, 'cardNumber');
+        const month = selector(state, 'month');
+        const year = selector(state, 'year');
         let cardType = getCreditCardType(cardNumber);
+
 
         return {
             cardType
+            , month
+            , year
         }
     }
 )(CreditCardComponent)

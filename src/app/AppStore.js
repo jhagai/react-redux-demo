@@ -1,5 +1,7 @@
 import {createStore, combineReducers} from 'redux'
 import {reducer as formReducer} from 'redux-form'
+import {routerReducer} from 'react-router-redux'
+
 
 var payment = (state = initalState.payment, action) => {
     if (action.type === 'SELECT_METHOD') {
@@ -21,7 +23,13 @@ var initalState = {
 };
 
 var myStore = createStore(
-    combineReducers({payment, form:formReducer})
+    combineReducers(
+        {
+            payment
+            , form: formReducer
+            , routing: routerReducer
+        }
+    )
     , initalState
     , window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
 )
