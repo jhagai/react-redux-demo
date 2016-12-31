@@ -1,0 +1,59 @@
+import {AppContainer} from 'react-hot-loader';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App';
+import {Provider} from 'react-redux'
+import myStore from './AppStore'
+import 'bootstrap'
+import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap/dist/css/bootstrap-theme.css'
+import { Router, Route, IndexRoute, browserHistory } from 'react-router'
+import { syncHistoryWithStore } from 'react-router-redux'
+import PaymentRoot from './components/Payment/PaymentRoot/PaymentRoot'
+import ConfirmationRoot from './components/Confirmation/ConfirmationRoot'
+
+
+// Create an enhanced history that syncs navigation events with the store
+const history = syncHistoryWithStore(browserHistory, myStore)
+
+const rootEl = document.getElementById('root');
+ReactDOM.render(
+    <Provider store={myStore}>
+        <AppContainer>
+            <Router history={history}>
+                <Route path="/" component={App}>
+                    <IndexRoute component={PaymentRoot}/>
+                    <Route path="payment" component={PaymentRoot}/>
+                    <Route path="confirmation" component={ConfirmationRoot}/>
+                </Route>
+            </Router>
+            {/*<App />*/}
+        </AppContainer>
+    </Provider>,
+    rootEl
+);
+
+if (module.hot) {
+    module.hot.accept('./App', () => {
+        // If you use Webpack 2 in ES modules mode, you can
+        // use <App /> here rather than require() a <NextApp />.
+        const NextApp = require('./App').default;
+        debugger;
+        ReactDOM.render(
+            <Provider store={myStore}>
+                <AppContainer>
+                    { /* Tell the Router to use our enhanced history */ }
+                    <Router history={history}>
+                        <Route path="/" component={NextApp}>
+                            <IndexRoute component={PaymentRoot}/>
+                            <Route path="payment" component={PaymentRoot}/>
+                            <Route path="confirmation" component={ConfirmationRoot}/>
+                        </Route>
+                    </Router>
+                    {/*<NextApp />*/}
+                </AppContainer>
+            </Provider>,
+            rootEl
+        );
+    });
+}

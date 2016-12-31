@@ -20,7 +20,7 @@ let Paypal = () => {
 //export default Paypal;
 
 export default reduxForm(
-    {
-        form: 'paypalForm' // a unique name for this form
-    }
-)(Paypal);
+     {
+         form: 'paypalForm' // a unique name for this form
+     }
+ )(Paypal);

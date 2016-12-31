@@ -1,7 +1,13 @@
+// @flow
+
 import React from 'react'
+import myStore from '../../../AppStore'
 import {connect} from 'react-redux'
 import {Field, reduxForm, formValueSelector} from 'redux-form'
 import CARD_TYPE_ENUM from '../../../common/CreditCardTypeEnum'
+import {browserHistory} from 'react-router'
+import SimpleField from '../../common/SimpleField'
+import SimpleSelectField from '../../common/SimpleSelectField'
 
 const validate = values => {
 
@@ -106,22 +112,8 @@ const validateCvc = (value, cardNumber) => {
     }
 }
 
-const renderField = ({input, label, type, meta: {touched, error, warning}}) => {
-
-    let feedBack = touched && ((error && <span>{error}</span>) || (warning && <span>{warning}</span>));
-
-    return (
-        <div className={'form-group ' + (touched && error ? 'has-error' : '')}>
-            <input {...input} placeholder={label} type={type} className="form-control"/>
-            <div className="control-label">
-                {feedBack}
-            </div>
-
-        </div>
-    );
-}
-
-const renderCreditCardField = ({input, label, type, cardTypeLabel, meta: {touched, error, warning}}) => {
+const renderCreditCardField = (props) => {
+    const {input, label, type, cardTypeLabel, meta: {touched, error, warning}} = props;
     return (
         <div className={'form-group ' + (touched && error ? 'has-error' : '')}>
             <div className="input-group">
@@ -162,11 +154,11 @@ const renderMonthField = (year) => {
         if (year && parseInt(year) === now.getFullYear()) {
             initialMonth = now.getMonth();
         }
-        for(let i = initialMonth; i < 12; i++) {
+        for (let i = initialMonth; i < 12; i++) {
             options.push(<option value={i+1} key={i+1}>{monthList[i]}</option>)
         }
 
-        return renderSelectField(props, options);
+        return SimpleSelectField(props, options);
     }
 }
 
@@ -188,35 +180,27 @@ const renderYearField = (month) => {
         let startYear = nowYear;
         if (month) {
             let date = new Date(nowYear, month - 1, 1);
-            if(date < nowStartOfMonth ) {
+            if (date < nowStartOfMonth) {
                 startYear++;
             }
         }
-        for(let i = startYear; i < nowYear + 10; i++) {
+        for (let i = startYear; i < nowYear + 10; i++) {
             options.push(<option value={i} key={i}>{i}</option>);
         }
 
-        return renderSelectField(props, options);
+        return SimpleSelectField(props, options);
     }
 }
 
-const renderSelectField = (props, options) => {
-    const {input, meta: {touched, error, warning}} = props;
-
-    return (
-        <div className={'form-group ' + (touched && error ? 'has-error' : '')}>
-            <select {...input} className="form-control">
-                {options}
-            </select>
-            <div className="control-label">
-                {touched && ((error && <span>{error}</span>) || (warning && <span>{warning}</span>))}
-            </div>
-        </div>
-    );
-}
-
-const showResults = values => {
-    alert(JSON.stringify(values, null, 4));
+const submitCreditCard = values => {
+    //debugger;
+    myStore.dispatch({
+        'type': 'PAYMENT-CREDIT_CARD-SUBMIT'
+        , 'creditCard': values
+    })
+    //alert(JSON.stringify(values, null, 4));
+    browserHistory.push('/confirmation');
+    //myStore.dispatch(push('/confirmation'));
 }
 
 let CreditCardComponent = (props) => {
@@ -235,9 +219,9 @@ let CreditCardComponent = (props) => {
                     <h3 className="panel-title">Credit card</h3>
                 </div>
                 <div className="panel-body">
-                    <form name="creditCardForm" onSubmit={handleSubmit(showResults)}>
+                    <form name="creditCard" onSubmit={handleSubmit(submitCreditCard)}>
                         <div className="col-xs-12">
-                            <Field component={renderField} name="name" label="Name" type="text"/>
+                            <Field component={SimpleField} name="name" label="Name" type="text"/>
                         </div>
                         <div className="col-xs-12">
                             <Field component={renderCreditCardField} name="cardNumber" label="Card number" type="text"
@@ -258,7 +242,7 @@ let CreditCardComponent = (props) => {
                             </Field>
                         </div>
                         <div className="col-xs-12 col-md-4">
-                            <Field component={renderField} name="cvc" label="CVC" type="text"
+                            <Field component={SimpleField} name="cvc" label="CVC" type="text"
                                    normalize={normalizeCvc('cardNumber')}
                                    className="form-control"
                             />
@@ -277,6 +261,7 @@ let CreditCardComponent = (props) => {
 CreditCardComponent = reduxForm(
     {
         form: 'creditCard'  // a unique identifier for this form
+        , destroyOnUnmount: false
         , validate
     }
 )(CreditCardComponent)
@@ -290,7 +275,6 @@ export default connect(
         const month = selector(state, 'month');
         const year = selector(state, 'year');
         let cardType = getCreditCardType(cardNumber);
-
 
         return {
             cardType

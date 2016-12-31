@@ -1,36 +1,23 @@
-import {createStore, combineReducers} from 'redux'
+import initialState from './InitialState'
+import PaymentReducer from './reducers/PaymentReducer'
+import {createStore, combineReducers, applyMiddleware} from 'redux'
 import {reducer as formReducer} from 'redux-form'
-import {routerReducer} from 'react-router-redux'
+import {routerReducer, routerMiddleware} from 'react-router-redux'
+import { browserHistory } from 'react-router'
 
 
-var payment = (state = initalState.payment, action) => {
-    if (action.type === 'SELECT_METHOD') {
-        return {
-            ...state
-            , 'selectedPayment': action.selectedPayment
-        };
-    } else {
-        return state;
-    }
-}
-
-
-var initalState = {
-    payment: {
-        'selectedPayment': 'CreditCard'
-    }
-
-};
+//const middleware = routerMiddleware(browserHistory);
 
 var myStore = createStore(
     combineReducers(
         {
-            payment
+            payment: PaymentReducer
             , form: formReducer
             , routing: routerReducer
         }
+        //,applyMiddleware(middleware)
     )
-    , initalState
+    , initialState
     , window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
 )
 
