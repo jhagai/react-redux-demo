@@ -1,30 +1,52 @@
 import React from 'react';
 import SimpleField from '../common/SimpleField'
-import SimpleSelectField from '../common/SimpleSelectField'
 import {connect} from 'react-redux'
 import {Field, FieldArray, reduxForm, formValueSelector} from 'redux-form'
-import DropdownList from 'react-widgets/lib/DropdownList'
 import Multiselect from 'react-widgets/lib/Multiselect'
-import DateTimePicker from 'react-widgets/lib/DateTimePicker'
+import SimpleDateTimePicker from '../common/SimpleDateTimePicker'
+import SimpleDropDownList from '../common/SimpleDropDownList'
 import Moment from 'moment'
 
-const validate = () => {
-
+const validate = values => {
     const errors = {};
+
+    errors.typeOfCover = required(values.typeOfCover);
+    errors.singleDestination = required(values.singleDestination);
+    errors.multiDestination = required(values.multiDestination);
+    errors.startDate = required(values.startDate);
+    errors.endDate = required(values.endDate);
+
+    if (!values.persons || !values.persons.length) {
+        errors.persons = { _error: 'At least one member must be entered' }
+    } else {
+        let personsArrayErrors = [];
+
+        values.persons.forEach((person, personIndex) => {
+            const personErrors = {}
+            if (!person || !person.dateOfBirth) {
+                personErrors.dateOfBirth = 'Required'
+                personsArrayErrors[personIndex] = personErrors;
+            }
+            if (!person || !person.price) {
+                personErrors.price = 'Required'
+                personsArrayErrors[personIndex] = personErrors;
+            }
+        });
+
+        if(personsArrayErrors.length) {
+            errors.persons = personsArrayErrors;
+        }
+    }
+
+
     return errors;
 }
 
-const submitNeeds = () => {
+const required = value => {
+    return value ? undefined : 'Required';
 }
 
-const renderDropdownList = (props) => {
-    let {input, meta, ...rest} = props;
-
-    return (
-        <div className='form-group'>
-            <DropdownList {...input} {...rest}/>
-        </div>
-    );
+const submitNeeds = () => {
 }
 
 const renderMultiList = (props) => {
@@ -37,12 +59,20 @@ const renderMultiList = (props) => {
     );
 }
 
-const renderDatepicker = (props) => {
-    let {input, meta, dateFormat, ...rest} = props;
-
+const renderPerson = (person, index) => {
     return (
-        <div className='form-group'>
-            <DateTimePicker {...input} {...rest} format={dateFormat} onBlur={() => input.onBlur(input.value)}/>
+        <div className="col-xs-12" key={index}>
+            <fieldset className='form-group'>
+                <legend>Person {index + 1}</legend>
+
+                <Field component={SimpleDateTimePicker} name={person + '.dateOfBirth'}
+                       placeholder="Date of birth"
+                       time={false}
+                       format={value => value ? value : null}
+                       dateFormat="DD/MM/YYYY"/>
+                <Field component={SimpleField} name={person + '.price'}
+                       label="Travel price"/>
+            </fieldset>
         </div>
     );
 }
@@ -51,17 +81,13 @@ const renderPersons = ({fields, meta: {touched, error}}) => {
     return (
         <div>
             <div className='form-group'>
+                <button type="button" onClick={() => fields.pop()}>Remove Person</button>
+                {fields.length}
                 <button type="button" onClick={() => fields.push({})}>Add Person</button>
             </div>
             {
                 fields.map(
-                    (person, index) =>
-                        <Field component={renderDatepicker} name={`${person}.dateOfBirth`}
-                               placeholder="End date"
-                               time={false}
-                               format={value => value ? value : null}
-                               dateFormat="DD/MM/YYYY"
-                               key={index}/>
+                    (person, index) => renderPerson(person, index)
                 )
             }
         </div >
@@ -137,44 +163,20 @@ const Needs = (props) => {
     }
 
     const singleTripForm = (
-        <div>
-            <div className="col-xs-12">
-                <Field component={renderDropdownList} name="singleDestination"
-                       valueField="id"
-                       textField="name"
-                       data={singleDestinationData}
-                       placeholder="Choose a destination"/>
-            </div>
+        <div className="col-xs-12">
+            <Field component={SimpleDropDownList} name="singleDestination"
+                   valueField="id"
+                   textField="name"
+                   data={singleDestinationData}
+                   placeholder="Choose a destination"/>
         </div>
     );
     const multiTripForm = (
-        <div>
-            <div className="col-xs-12">
-                <Field component={renderMultiList} name="multiDestination" valueField="id"
-                       textField="name"
-                       data={multiDestinationData}
-                       placeholder="Choose your destinations"/>
-            </div>
-            <div className="col-xs-6">
-                <Field component={renderDatepicker} name="startDate"
-                       placeholder="Start date"
-                       time={false}
-                       format={value => value ? value : null}
-                       min={startDateMin} max={startDateMax}
-                       dateFormat="DD/MM/YYYY"
-                />
-
-            </div>
-            <div className="col-xs-6">
-                <Field component={renderDatepicker} name="endDate"
-                       placeholder="End date"
-                       time={false}
-                       format={value => value ? value : null}
-                       min={endDateMin} max={endDateMax}
-                       dateFormat="DD/MM/YYYY"
-                />
-            </div>
-            <FieldArray name="persons" component={renderPersons}/>
+        <div className="col-xs-12">
+            <Field component={renderMultiList} name="multiDestination" valueField="id"
+                   textField="name"
+                   data={multiDestinationData}
+                   placeholder="Choose your destinations"/>
         </div>
     );
 
@@ -198,12 +200,32 @@ const Needs = (props) => {
                         <div className="panel-body">
                             <form name="needs" onSubmit={handleSubmit(submitNeeds)}>
                                 <div className="col-xs-12">
-                                    <Field component={renderDropdownList} name="typeOfCover" valueField="id"
+                                    <Field component={SimpleDropDownList} name="typeOfCover" valueField="id"
                                            textField="name"
                                            data={typeOfCoverData}
                                            placeholder="Choose a type of cover"/>
                                 </div>
                                 {tripForm}
+                                <div className="col-xs-6">
+                                    <Field component={SimpleDateTimePicker} name="startDate"
+                                           placeholder="Start date"
+                                           time={false}
+                                           format={value => value ? value : null}
+                                           min={startDateMin} max={startDateMax}
+                                           dateFormat="DD/MM/YYYY"
+                                    />
+
+                                </div>
+                                <div className="col-xs-6">
+                                    <Field component={SimpleDateTimePicker} name="endDate"
+                                           placeholder="End date"
+                                           time={false}
+                                           format={value => value ? value : null}
+                                           min={endDateMin} max={endDateMax}
+                                           dateFormat="DD/MM/YYYY"
+                                    />
+                                </div>
+                                <FieldArray name="persons" component={renderPersons}/>
                             </form>
                         </div>
                     </div>

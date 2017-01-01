@@ -7,7 +7,7 @@ import {Field, reduxForm, formValueSelector} from 'redux-form'
 import CARD_TYPE_ENUM from '../../../common/CreditCardTypeEnum'
 import {browserHistory} from 'react-router'
 import SimpleField from '../../common/SimpleField'
-import SimpleSelectField from '../../common/SimpleSelectField'
+import SimpleDropDownList from '../../common/SimpleDropDownList'
 
 const validate = values => {
 
@@ -142,56 +142,6 @@ const monthList = [
     , 'December'
 ]
 
-const renderMonthField = (year) => {
-    let now = new Date();
-
-    return (props) => {
-        const {value} = props;
-        let defaultOption = <option value="" disabled key="0">(MM)</option>;
-        let options = [defaultOption];
-
-        let initialMonth = 0;
-        if (year && parseInt(year) === now.getFullYear()) {
-            initialMonth = now.getMonth();
-        }
-        for (let i = initialMonth; i < 12; i++) {
-            options.push(<option value={i+1} key={i+1}>{monthList[i]}</option>)
-        }
-
-        return SimpleSelectField(props, options);
-    }
-}
-
-const renderYearField = (month) => {
-    let now = new Date();
-    let nowYear = now.getFullYear();
-    let nowStartOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-    return (props) => {
-        const {value} = props;
-
-        const defaultOption = <option value="" disabled key="0">(YYYY)</option>;
-
-        let options = [
-            defaultOption
-        ];
-
-
-        let startYear = nowYear;
-        if (month) {
-            let date = new Date(nowYear, month - 1, 1);
-            if (date < nowStartOfMonth) {
-                startYear++;
-            }
-        }
-        for (let i = startYear; i < nowYear + 10; i++) {
-            options.push(<option value={i} key={i}>{i}</option>);
-        }
-
-        return SimpleSelectField(props, options);
-    }
-}
-
 const submitCreditCard = values => {
     //debugger;
     myStore.dispatch({
@@ -201,6 +151,58 @@ const submitCreditCard = values => {
     //alert(JSON.stringify(values, null, 4));
     browserHistory.push('/confirmation');
     //myStore.dispatch(push('/confirmation'));
+}
+
+const MonthField = (props) => {
+    const {year} = props;
+    let now = new Date();
+
+    // Calculate available months
+    const availableMonths = [];
+
+    let initialMonth = 0;
+    if (year && parseInt(year) === now.getFullYear()) {
+        initialMonth = now.getMonth();
+    }
+    for (let i = initialMonth; i < 12; i++) {
+        availableMonths.push({id: i, name: monthList[i]});
+    }
+
+    return (
+        <Field component={SimpleDropDownList} name="month" valueField="id"
+               textField="name"
+               data={availableMonths}
+               placeholder="(MM)"/>
+    );
+
+}
+
+const YearField = (props) => {
+    const {month} = props;
+    let now = new Date();
+    let nowYear = now.getFullYear();
+    let nowStartOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Calculate available years
+    const availableYears = [];
+
+    let startYear = nowYear;
+    if (month) {
+        let date = new Date(nowYear, month - 1, 1);
+        if (date < nowStartOfMonth) {
+            startYear++;
+        }
+    }
+    for (let i = startYear; i < nowYear + 10; i++) {
+        availableYears.push({id: i, name: i});
+    }
+
+    return (
+        <Field component={SimpleDropDownList} name="year" valueField="id"
+               textField="name"
+               data={availableYears}
+               placeholder="(YYYY)"/>
+    );
 }
 
 let CreditCardComponent = (props) => {
@@ -232,14 +234,10 @@ let CreditCardComponent = (props) => {
                             />
                         </div>
                         <div className="col-xs-12 col-md-4">
-                            <Field name="month" className="form-control" component={renderMonthField(year)}
-                                   defaultValue="">
-                            </Field>
+                            <MonthField year={year}/>
                         </div>
                         <div className="col-xs-12 col-md-4">
-                            <Field name="year" className="form-control" component={renderYearField(month)}
-                                   defaultValue="">
-                            </Field>
+                            <YearField month={month}/>
                         </div>
                         <div className="col-xs-12 col-md-4">
                             <Field component={SimpleField} name="cvc" label="CVC" type="text"

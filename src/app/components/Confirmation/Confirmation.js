@@ -22,7 +22,7 @@ const ConfirmationRoot = ({payment}) => {
                             </dl>
                             <dl className="dl-horizontal">
                                 <dt>Validity</dt>
-                                <dd>{payment.creditCard.month + 1}/{payment.creditCard.year}</dd>
+                                <dd>{payment.creditCard.month.name} {payment.creditCard.year.name}</dd>
                             </dl>
                             <dl className="dl-horizontal">
                                 <dt>CVC</dt>
