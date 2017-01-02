@@ -6,6 +6,8 @@ import Multiselect from 'react-widgets/lib/Multiselect'
 import SimpleDateTimePicker from '../common/SimpleDateTimePicker'
 import SimpleDropDownList from '../common/SimpleDropDownList'
 import Moment from 'moment'
+import {browserHistory} from 'react-router'
+
 
 const validate = values => {
     const errors = {};
@@ -17,7 +19,7 @@ const validate = values => {
     errors.endDate = required(values.endDate);
 
     if (!values.persons || !values.persons.length) {
-        errors.persons = { _error: 'At least one member must be entered' }
+        errors.persons = {_error: 'At least one member must be entered'}
     } else {
         let personsArrayErrors = [];
 
@@ -33,7 +35,7 @@ const validate = values => {
             }
         });
 
-        if(personsArrayErrors.length) {
+        if (personsArrayErrors.length) {
             errors.persons = personsArrayErrors;
         }
     }
@@ -47,6 +49,7 @@ const required = value => {
 }
 
 const submitNeeds = () => {
+    browserHistory.push('/payment');
 }
 
 const renderMultiList = (props) => {
@@ -79,18 +82,31 @@ const renderPerson = (person, index) => {
 
 const renderPersons = ({fields, meta: {touched, error}}) => {
     return (
-        <div>
-            <div className='form-group'>
-                <button type="button" onClick={() => fields.pop()}>Remove Person</button>
-                {fields.length}
-                <button type="button" onClick={() => fields.push({})}>Add Person</button>
+        <div className="col-xs-12">
+            <div className="panel panel-primary">
+                <div className="panel-heading">
+                    <h3 className="panel-title">Persons</h3>
+                </div>
+                <div className="panel-body">
+                    <div className='form-group col-xs-12 col-md-5'>
+                        <div className="input-group">
+                            <div className="input-group-btn">
+                                <button type="button" onClick={() => fields.pop()} disabled={fields.length > 1 ? false : true} className="btn btn-primary glyphicon glyphicon-minus" aria-label="true"></button>
+                            </div>
+                            <input type="text" className="form-control" value={fields.length} style={{'textAlign' : 'center'}} readOnly={true}/>
+                            <div className="input-group-btn">
+                                <button type="button" onClick={() => fields.push({})} disabled={fields.length < 10 ? false : true} className="btn btn-primary glyphicon glyphicon-plus" aria-label="true"></button>
+                            </div>
+                        </div>
+                    </div>
+                    {
+                        fields.map(
+                            (person, index) => renderPerson(person, index)
+                        )
+                    }
+                </div>
             </div>
-            {
-                fields.map(
-                    (person, index) => renderPerson(person, index)
-                )
-            }
-        </div >
+        </div>
     );
 }
 
@@ -135,7 +151,7 @@ const multiDestinationData = [
 
 
 const Needs = (props) => {
-    const {handleSubmit, typeOfCover, startDate, endDate} = props;
+    const {handleSubmit, typeOfCover, startDate, endDate, submitting} = props;
 
     let defaultStartMinDate = Moment().startOf('day').toDate();
     let defaultStartMaxDate = Moment().startOf('day').add(2, 'weeks').toDate();
@@ -226,6 +242,10 @@ const Needs = (props) => {
                                     />
                                 </div>
                                 <FieldArray name="persons" component={renderPersons}/>
+                                <div className="col-xs-12 col-md-4 col-md-offset-8">
+                                    <button type="submit" className="btn btn-primary col-xs-12" disabled={submitting}>Submit
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>
@@ -245,6 +265,7 @@ export default connect(
             typeOfCover
             , startDate
             , endDate
+            , initialValues: {persons: [{}]}
         }
     }
 )(reduxForm(
