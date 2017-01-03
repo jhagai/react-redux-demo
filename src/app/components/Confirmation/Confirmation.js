@@ -1,7 +1,30 @@
 import React from 'react';
 import {connect} from 'react-redux'
+import Moment from 'moment'
 
-const ConfirmationRoot = ({payment}) => {
+const ConfirmationRoot = ({payment, needs}) => {
+
+    let destination = null;
+    if (needs.typeOfCover.id === 1) {
+        destination = (
+            <dl className="dl-horizontal">
+                <dt>Single destination</dt>
+                <dd>{needs.singleDestination.name}</dd>
+            </dl>
+        );
+    } else if (needs.typeOfCover.id === 2) {
+
+        let countries = needs.multiDestination.map(
+            (value) => value.name
+        ).join(', ');
+        destination = (
+            <dl className="dl-horizontal">
+                <dt>Multi destination</dt>
+                <dd>{countries}</dd>
+            </dl>
+        );
+    }
+
     return (
         <div>
             <div className="row">
@@ -11,6 +34,21 @@ const ConfirmationRoot = ({payment}) => {
                             <h3 className="panel-title">Confirmation</h3>
                         </div>
                         <div className="panel-body">
+                            <h3 className="page-header">Needs</h3>
+                            <dl className="dl-horizontal">
+                                <dt>Type of cover</dt>
+                                <dd>{needs.typeOfCover.name}</dd>
+                            </dl>
+                            {destination}
+                            <dl className="dl-horizontal">
+                                <dt>Start date</dt>
+                                <dd>{Moment(needs.startDate).format('DD/MM/YYYY')}</dd>
+                            </dl>
+                            <dl className="dl-horizontal">
+                                <dt>End date</dt>
+                                <dd>{Moment(needs.endDate).format('DD/MM/YYYY')}</dd>
+                            </dl>
+
                             <h3 className="page-header">Payment data</h3>
                             <dl className="dl-horizontal">
                                 <dt>Name</dt>
@@ -18,7 +56,7 @@ const ConfirmationRoot = ({payment}) => {
                             </dl>
                             <dl className="dl-horizontal">
                                 <dt>Card number</dt>
-                                <dd>{payment.creditCard.cardNumber.replace(/^.{12}/,'XXXXXXXXXXXX')}</dd>
+                                <dd>{payment.creditCard.cardNumber.replace(/^.{12}/, 'XXXXXXXXXXXX')}</dd>
                             </dl>
                             <dl className="dl-horizontal">
                                 <dt>Validity</dt>
@@ -41,6 +79,7 @@ const ConfirmationRoot = ({payment}) => {
 const mapStateToProps = (state) => {
     return {
         payment: state.payment
+        , needs: state.needs
     }
 }
 

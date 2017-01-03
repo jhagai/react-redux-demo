@@ -1,5 +1,6 @@
 import initialState from './InitialState'
 import PaymentReducer from './reducers/PaymentReducer'
+import NeedsReducer from './reducers/NeedsReducer'
 import {createStore, combineReducers, applyMiddleware} from 'redux'
 import {reducer as formReducer} from 'redux-form'
 import {routerReducer, routerMiddleware} from 'react-router-redux'
@@ -11,7 +12,8 @@ import { browserHistory } from 'react-router'
 var myStore = createStore(
     combineReducers(
         {
-            payment: PaymentReducer
+            needs: NeedsReducer
+            , payment: PaymentReducer
             , form: formReducer
             , routing: routerReducer
         }

@@ -147,7 +147,7 @@ const submitCreditCard = values => {
     myStore.dispatch({
         'type': 'PAYMENT-CREDIT_CARD-SUBMIT'
         , 'creditCard': values
-    })
+    });
     //alert(JSON.stringify(values, null, 4));
     browserHistory.push('/confirmation');
     //myStore.dispatch(push('/confirmation'));

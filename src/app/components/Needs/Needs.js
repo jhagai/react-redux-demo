@@ -7,14 +7,21 @@ import SimpleDateTimePicker from '../common/SimpleDateTimePicker'
 import SimpleDropDownList from '../common/SimpleDropDownList'
 import Moment from 'moment'
 import {browserHistory} from 'react-router'
-
+import myStore from '../../AppStore'
 
 const validate = values => {
     const errors = {};
 
     errors.typeOfCover = required(values.typeOfCover);
-    errors.singleDestination = required(values.singleDestination);
-    errors.multiDestination = required(values.multiDestination);
+
+    if (values.typeOfCover) {
+        if (values.typeOfCover.id === 1) {
+            errors.singleDestination = required(values.singleDestination);
+        } else if (values.typeOfCover.id === 2) {
+            errors.multiDestination = required(values.multiDestination);
+        }
+    }
+
     errors.startDate = required(values.startDate);
     errors.endDate = required(values.endDate);
 
@@ -48,7 +55,11 @@ const required = value => {
     return value ? undefined : 'Required';
 }
 
-const submitNeeds = () => {
+const submitNeeds = (values) => {
+    myStore.dispatch({
+        'type': 'NEEDS-SUBMIT'
+        , 'needs': values
+    });
     browserHistory.push('/payment');
 }
 
@@ -91,11 +102,17 @@ const renderPersons = ({fields, meta: {touched, error}}) => {
                     <div className='form-group col-xs-12 col-md-5'>
                         <div className="input-group">
                             <div className="input-group-btn">
-                                <button type="button" onClick={() => fields.pop()} disabled={fields.length > 1 ? false : true} className="btn btn-primary glyphicon glyphicon-minus" aria-label="true"></button>
+                                <button type="button" onClick={() => fields.pop()}
+                                        disabled={fields.length > 1 ? false : true}
+                                        className="btn btn-primary glyphicon glyphicon-minus"
+                                        aria-label="true"></button>
                             </div>
-                            <input type="text" className="form-control" value={fields.length} style={{'textAlign' : 'center'}} readOnly={true}/>
+                            <input type="text" className="form-control" value={fields.length}
+                                   style={{'textAlign' : 'center'}} readOnly={true}/>
                             <div className="input-group-btn">
-                                <button type="button" onClick={() => fields.push({})} disabled={fields.length < 10 ? false : true} className="btn btn-primary glyphicon glyphicon-plus" aria-label="true"></button>
+                                <button type="button" onClick={() => fields.push({})}
+                                        disabled={fields.length < 10 ? false : true}
+                                        className="btn btn-primary glyphicon glyphicon-plus" aria-label="true"></button>
                             </div>
                         </div>
                     </div>
@@ -243,7 +260,8 @@ const Needs = (props) => {
                                 </div>
                                 <FieldArray name="persons" component={renderPersons}/>
                                 <div className="col-xs-12 col-md-4 col-md-offset-8">
-                                    <button type="submit" className="btn btn-primary col-xs-12" disabled={submitting}>Submit
+                                    <button type="submit" className="btn btn-primary col-xs-12" disabled={submitting}>
+                                        Submit
                                     </button>
                                 </div>
                             </form>
