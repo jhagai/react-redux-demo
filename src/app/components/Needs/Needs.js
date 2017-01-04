@@ -1,13 +1,42 @@
 import React from 'react';
 import SimpleField from '../common/SimpleField'
 import {connect} from 'react-redux'
-import {Field, FieldArray, reduxForm, formValueSelector} from 'redux-form'
+import {Field, FieldArray, reduxForm, formValueSelector, SubmissionError} from 'redux-form'
 import Multiselect from 'react-widgets/lib/Multiselect'
 import SimpleDateTimePicker from '../common/SimpleDateTimePicker'
 import SimpleDropDownList from '../common/SimpleDropDownList'
 import Moment from 'moment'
 import {browserHistory} from 'react-router'
 import myStore from '../../AppStore'
+
+const sleep = (success, ms) => new Promise((resolve, reject) => success ? setTimeout(resolve, ms) : setTimeout(reject, ms))
+
+function submitToServer(values) {
+    let success = true;
+    if (values.typeOfCover) {
+        if (values.typeOfCover.id === 1) {
+            // Single trip
+            if (values.singleDestination.id === 3) {
+                success = false;
+            }
+
+        } else if (values.typeOfCover.id === 2) {
+            // Multi trip
+            if (values.multiDestination.id === 3) {
+                success = false;
+            }
+
+        }
+    }
+    return sleep(success, 3000) // simulate server latency
+        .then(() => {
+            submitNeeds(values);
+        }).catch(() => {
+                throw new SubmissionError({_error: 'Technical error'});
+            }
+        )
+
+}
 
 const validate = values => {
     const errors = {};
@@ -167,8 +196,46 @@ const multiDestinationData = [
 ];
 
 
+class MyModal extends React.Component {
+
+    constructor(props) {
+        super(props);
+    }
+
+    componentDidMount() {
+        $('#myModal').modal()
+    }
+
+    componentDidUpdate() {
+        $('#myModal').modal()
+    }
+
+    render() {
+        return (
+            <div className="modal fade" id="myModal" role="dialog">
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <button type="button" className="close" data-dismiss="modal">&times;</button>
+                            <h4 className="modal-title">Error</h4>
+                        </div>
+                        <div className="modal-body">
+                            <p>{this.props.errorMessage}</p>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        );
+    }
+
+}
+
 const Needs = (props) => {
-    const {handleSubmit, typeOfCover, startDate, endDate, submitting} = props;
+    const {error, handleSubmit, typeOfCover, startDate, endDate, submitting} = props;
 
     let defaultStartMinDate = Moment().startOf('day').toDate();
     let defaultStartMaxDate = Moment().startOf('day').add(2, 'weeks').toDate();
@@ -222,8 +289,10 @@ const Needs = (props) => {
         }
     }
 
+
     return (
         <div>
+            { error && !submitting ? <MyModal errorMessage={error}/> : null}
             <div className="row">
                 <div className="col-xs-12">
                     <div className="panel panel-primary">
@@ -231,7 +300,7 @@ const Needs = (props) => {
                             <h3 className="panel-title">Needs</h3>
                         </div>
                         <div className="panel-body">
-                            <form name="needs" onSubmit={handleSubmit(submitNeeds)}>
+                            <form name="needs" onSubmit={handleSubmit(submitToServer)}>
                                 <div className="col-xs-12">
                                     <Field component={SimpleDropDownList} name="typeOfCover" valueField="id"
                                            textField="name"
