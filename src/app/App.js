@@ -1,5 +1,6 @@
 import React from 'react';
 import Main from './components/Main'
+import Quotes from './components/Quotes/Quotes'
 import Payment from './components/Payment/Payment'
 import Needs from './components/Needs/Needs'
 import Confirmation from './components/Confirmation/Confirmation'
@@ -23,6 +24,7 @@ const App = () => {
         <Router history={history}>
             <Route path="/" component={Main}>
                 <IndexRoute component={Needs}/>
+                <Route path="/quotes" component={Quotes}/>
                 <Route path="/payment" component={Payment}/>
                 <Route path="/confirmation" component={Confirmation}/>
             </Route>

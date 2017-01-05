@@ -2,6 +2,22 @@ import React from 'react';
 import {connect} from 'react-redux'
 import Moment from 'moment'
 
+const renderPersons = (persons) => {
+
+    let personList = persons.map((person, index)=> <li key={index}>Person {index+1}: {Moment(person.dateOfBirth).format('DD/MM/YYYY')}, {person.price}€</li>)
+
+    return (
+        <dl className="dl-horizontal">
+            <dt>Persons</dt>
+            <dd>
+                <ul>
+                    {personList}
+                </ul>
+            </dd>
+        </dl>
+    );
+}
+
 const ConfirmationRoot = ({payment, needs}) => {
 
     let destination = null;
@@ -48,6 +64,7 @@ const ConfirmationRoot = ({payment, needs}) => {
                                 <dt>End date</dt>
                                 <dd>{Moment(needs.endDate).format('DD/MM/YYYY')}</dd>
                             </dl>
+                            {renderPersons(needs.persons)}
 
                             <h3 className="page-header">Payment data</h3>
                             <dl className="dl-horizontal">

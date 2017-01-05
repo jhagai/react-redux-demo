@@ -89,7 +89,7 @@ const submitNeeds = (values) => {
         'type': 'NEEDS-SUBMIT'
         , 'needs': values
     });
-    browserHistory.push('/payment');
+    browserHistory.push('/quotes');
 }
 
 const renderMultiList = (props) => {
@@ -288,7 +288,6 @@ const Needs = (props) => {
             tripForm = multiTripForm;
         }
     }
-
 
     return (
         <div>
