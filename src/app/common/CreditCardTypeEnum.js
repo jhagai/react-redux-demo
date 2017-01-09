@@ -17,7 +17,6 @@ var CARD_TYPE_ENUM = {
         , maxLength : 16
         , securityCodeLength: 3
     }
-
 }
 
 export default CARD_TYPE_ENUM

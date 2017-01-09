@@ -4,6 +4,12 @@ import {connect} from 'react-redux'
 const Main = ({children, pathname}) => {
     return (
         <div>
+            <div id="myNav" className="overlay">
+                <div className="overlay-content">
+                    hello
+                </div>
+            </div>
+
             <div className="page-header">
                 <ol className="breadcrumb">
                     <li className={'breadcrumb-item' + (pathname === '/' ? ' active' : '') }>Needs</li>

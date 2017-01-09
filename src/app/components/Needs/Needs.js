@@ -8,34 +8,16 @@ import SimpleDropDownList from '../common/SimpleDropDownList'
 import Moment from 'moment'
 import {browserHistory} from 'react-router'
 import myStore from '../../AppStore'
-
-const sleep = (success, ms) => new Promise((resolve, reject) => success ? setTimeout(resolve, ms) : setTimeout(reject, ms))
+import {checkNeeds} from '../../services/NeedsService'
 
 function submitToServer(values) {
-    let success = true;
-    if (values.typeOfCover) {
-        if (values.typeOfCover.id === 1) {
-            // Single trip
-            if (values.singleDestination.id === 3) {
-                success = false;
-            }
-
-        } else if (values.typeOfCover.id === 2) {
-            // Multi trip
-            if (values.multiDestination.id === 3) {
-                success = false;
-            }
-
-        }
-    }
-    return sleep(success, 3000) // simulate server latency
-        .then(() => {
-            submitNeeds(values);
+    return checkNeeds(values)
+        .then((data) => {
+            submitNeeds(data, values);
         }).catch(() => {
                 throw new SubmissionError({_error: 'Technical error'});
             }
         )
-
 }
 
 const validate = values => {
@@ -84,7 +66,12 @@ const required = value => {
     return value ? undefined : 'Required';
 }
 
-const submitNeeds = (values) => {
+const submitNeeds = (data, values) => {
+
+    myStore.dispatch({
+        'type': 'QUOTES-FETCHED'
+        , 'quotes': data
+    });
     myStore.dispatch({
         'type': 'NEEDS-SUBMIT'
         , 'needs': values

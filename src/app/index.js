@@ -8,6 +8,7 @@ import 'bootstrap'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap/dist/css/bootstrap-theme.css'
 import 'react-widgets/lib/less/react-widgets.less'
+import '../assets/css/style.css'
 import Moment from 'moment'
 import momentLocalizer from 'react-widgets/lib/localizers/moment'
 
