@@ -6,7 +6,7 @@ const Main = ({children, pathname}) => {
         <div>
             <div id="myNav" className="overlay">
                 <div className="overlay-content">
-                    hello
+                    Wait
                 </div>
             </div>
 
@@ -14,7 +14,7 @@ const Main = ({children, pathname}) => {
                 <ol className="breadcrumb">
                     <li className={'breadcrumb-item' + (pathname === '/' ? ' active' : '') }>Needs</li>
                     <li className={'breadcrumb-item' + (pathname === '/quotes' ? ' active' : '')}>Quotes</li>
-                    <li className="breadcrumb-item">Information</li>
+                    <li className={'breadcrumb-item' + (pathname === '/information' ? ' active' : '')}>Information</li>
                     <li className={'breadcrumb-item' + (pathname === '/payment' ? ' active' : '') }>Payment</li>
                     <li className={'breadcrumb-item' + (pathname === '/confirmation' ? ' active' : '') }>Confirmation</li>
                 </ol>

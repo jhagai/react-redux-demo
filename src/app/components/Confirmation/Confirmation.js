@@ -19,7 +19,7 @@ const renderPersons = (persons) => {
     );
 }
 
-const ConfirmationRoot = ({payment, needs, quotes}) => {
+const ConfirmationRoot = ({payment, needs, quotes, information}) => {
 
     let destination = null;
     if (needs.typeOfCover.id === 1) {
@@ -44,7 +44,7 @@ const ConfirmationRoot = ({payment, needs, quotes}) => {
 
     const selectedQuote = quotes.fetched.find((quote) => quote.id === quotes.selected);
 
-    const coveragesJsx = selectedQuote.coverages.map((coverage) => <li>{coverage}</li>);
+    const coveragesJsx = selectedQuote.coverages.map((coverage) => <li key={coverage}>{coverage}</li>);
 
     const quoteJsx = (
         <div>
@@ -94,6 +94,29 @@ const ConfirmationRoot = ({payment, needs, quotes}) => {
                                 {quoteJsx}
                             </div>
                             <div>
+                                <h3 className="page-header">Information</h3>
+                                <dl className="dl-horizontal">
+                                    <dt>Firstname</dt>
+                                    <dd>{information.firstname}</dd>
+                                </dl>
+                                <dl className="dl-horizontal">
+                                    <dt>Name</dt>
+                                    <dd>{information.name}</dd>
+                                </dl>
+                                <dl className="dl-horizontal">
+                                    <dt>Address</dt>
+                                    <dd>{information.address}</dd>
+                                </dl>
+                                <dl className="dl-horizontal">
+                                    <dt>Zip code</dt>
+                                    <dd>{information.zipCode}</dd>
+                                </dl>
+                                <dl className="dl-horizontal">
+                                    <dt>City</dt>
+                                    <dd>{information.city.city}</dd>
+                                </dl>
+                            </div>
+                            <div>
                                 <h3 className="page-header">Payment data</h3>
                                 <dl className="dl-horizontal">
                                     <dt>Name</dt>
@@ -101,6 +124,7 @@ const ConfirmationRoot = ({payment, needs, quotes}) => {
                                 </dl>
                                 <dl className="dl-horizontal">
                                     <dt>Card number</dt>
+                                    {/*<dd>{payment.creditCard.cardNumber.replace(/^.{12}/, 'XXXXXXXXXXXX')}</dd>*/}
                                     <dd>{payment.creditCard.cardNumber.replace(/^.{12}/, 'XXXXXXXXXXXX')}</dd>
                                 </dl>
                                 <dl className="dl-horizontal">
@@ -127,6 +151,7 @@ const mapStateToProps = (state) => {
         payment: state.payment
         , needs: state.needs
         , quotes: state.quotes
+        , information: state.information
     }
 }
 

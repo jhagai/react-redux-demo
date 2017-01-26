@@ -8,7 +8,7 @@ const chooseQuote = function (quoteId) {
         'type': 'QUOTES-SELECT'
         , 'selected': quoteId
     });
-    browserHistory.push('/payment')
+    browserHistory.push('/information')
 }
 
 const Quotes = ({quotes}) => {
@@ -18,10 +18,10 @@ const Quotes = ({quotes}) => {
         quotesJsx = quotes.fetched.map(
             (quote) => {
 
-                const coveragesJsx = quote.coverages.map((coverage) => <li>coverage</li>);
+                const coveragesJsx = quote.coverages.map((coverage) => <li key={quote.id + '-' + coverage}>coverage</li>);
 
                 return (
-                    <div className="panel panel-primary">
+                    <div className="panel panel-primary" key={quote.id}>
                         <div className="panel-heading">{quote.title}</div>
                         <div className="panel-body">
                             <ul>

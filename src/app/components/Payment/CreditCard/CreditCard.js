@@ -278,6 +278,7 @@ export default connect(
             cardType
             , month
             , year
+            , initialValues: {name: state.information.name}
         }
     }
 )(CreditCardComponent)
